@@ -38,7 +38,16 @@ def custom_score(game, player):
     """
 
     # TODO: finish this function!
-    raise NotImplementedError
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 
 class CustomPlayer:
@@ -132,7 +141,7 @@ class CustomPlayer:
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            next_move = self.minimax(game, 1, True)
+            _ , next_move = self.minimax(game, 1, True)
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
@@ -176,8 +185,24 @@ class CustomPlayer:
             raise Timeout()
 
         legal_moves = game.get_legal_moves()
-        return legal_moves[random.randint(0, len(legal_moves) - 1)]  # TODO
-        # TODO: finish this function!
+
+        if depth == 1:
+            if maximizing_player:
+                score, move = max([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
+            elif not maximizing_player:
+                score, move = min([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
+            return score, move
+        else:
+            results = {}
+            for m in legal_moves:
+                key, val = self.minimax(game.forecast_move(m), depth - 1, not maximizing_player)
+                results[key] = m
+            if maximizing_player:
+                score = max(results.keys())
+            elif not maximizing_player:
+                score = min(results.keys())
+            return score, results[score]
+
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the

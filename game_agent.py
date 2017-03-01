@@ -148,6 +148,10 @@ class CustomPlayer:
             return legal_moves[random.randint(0, len(legal_moves) - 1)]  # TODO
 
         # Return the best move from the last completed search iteration
+
+        if (not next_move) or (next_move == (-1, -1)):
+            return legal_moves[random.randint(0, len(legal_moves) - 1)]
+
         return next_move
 
     def minimax(self, game, depth, maximizing_player=True):
@@ -186,22 +190,23 @@ class CustomPlayer:
 
         legal_moves = game.get_legal_moves()
 
-        if depth == 1:
-            if maximizing_player:
-                score, move = max([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
-            elif not maximizing_player:
-                score, move = min([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
-            return score, move
+        move = (-1, -1)
+        score = float("-inf")
+
+        if depth == 0:
+            return self.score(game, self), move
+
         else:
             results = {}
             for m in legal_moves:
-                key, val = self.minimax(game.forecast_move(m), depth - 1, not maximizing_player)
-                results[key] = m
+                score_m, move_m = self.minimax(game.forecast_move(m), depth - 1, not maximizing_player)
+                results[score_m] = m
             if maximizing_player:
                 score = max(results.keys())
             elif not maximizing_player:
                 score = min(results.keys())
-            return score, results[score]
+            move = results[score]
+            return score, move
 
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
@@ -247,20 +252,36 @@ class CustomPlayer:
 
         legal_moves = game.get_legal_moves()
 
-        if depth == 1:
-            if maximizing_player:
-                score, move = max([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
-            elif not maximizing_player:
-                score, move = min([(self.score(game.forecast_move(m), self), m) for m in legal_moves])
-            return score, move
-        else:
-            results = {}
-            for m in legal_moves:
-                key, val = self.alphabeta(game.forecast_move(m), depth - 1, alpha, beta, not maximizing_player)
-                results[key] = m
-            if maximizing_player:
-                score = max(results.keys())
-            elif not maximizing_player:
-                score = min(results.keys())
-            return score, results[score]
+        move = (-1, -1)
+        score = float("-inf")
 
+        if depth == 0:
+            return self.score(game, self), move
+
+        elif maximizing_player:
+            score = float("-inf")
+            for m in legal_moves:
+                score_m, move_m = self.alphabeta(game.forecast_move(m), depth - 1, alpha, beta, not maximizing_player)
+
+                if score <= score_m:
+                    score = score_m
+                    move = m
+
+                if score >= beta:
+                    break
+                alpha = max(alpha, score)
+
+        else:
+            score = float("inf")
+            for m in legal_moves:
+                score_m, move_m = self.alphabeta(game.forecast_move(m), depth - 1, alpha, beta, not maximizing_player)
+
+                if score >= score_m:
+                    score = score_m
+                    move = m
+
+                if score <= alpha:
+                    break
+                beta = min(alpha, score)
+
+        return score, move

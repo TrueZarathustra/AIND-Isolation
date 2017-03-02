@@ -115,8 +115,8 @@ def strategy_free_field(game, player):
     Move closer to regions with a lot of blank spaces
 
     Result:
-    ID_Improved: 65.71%
-    Student: 68.57%
+    ID_Improved: 64.64%
+    Student: 66,78%
     """
 
     if game.is_loser(player):

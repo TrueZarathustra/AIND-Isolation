@@ -8,8 +8,10 @@ relative strength using tournament.py and include the results in your report.
 """
 import random
 
+
 def distance(x1, y1, x2, y2):
     return ((x2-x1)**2 + (y2-y1)**2)**0.5
+
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
@@ -17,29 +19,12 @@ class Timeout(Exception):
 
 
 def custom_score(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
 
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
+    # return basic_score(game, player)
+    return strategy_complex(game, player)
 
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
 
-    player : object
-        A player instance in the current game (i.e., an object corresponding to
-        one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-    Returns
-    -------
-    float
-        The heuristic value of the current game state to the specified player.
-    """
-
-    # TODO: finish this function!
+def basic_score(game, player):
 
     if game.is_loser(player):
         return float("-inf")
@@ -63,21 +48,12 @@ def strategy_center(game, player):
     Student: 66.7% (average)
     """
 
-    if game.is_loser(player):
-        return float("-inf")
-
-    if game.is_winner(player):
-        return float("inf")
-
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-
     xc = game.width*1.0/2
     yc = game.height*1.0/2
 
     x, y = game.get_player_location(player)
 
-    return float(own_moves - opp_moves) - distance(x, y, xc, yc)*0.1
+    return basic_score(game, player) - distance(x, y, xc, yc)*0.1
 
 
 def strategy_close_or_far(game, player):
@@ -90,23 +66,17 @@ def strategy_close_or_far(game, player):
     Student: 64.29%
     """
 
-    if game.is_loser(player):
-        return float("-inf")
+    bs = basic_score(game, player)
 
-    if game.is_winner(player):
-        return float("inf")
-
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
     x1, y1 = game.get_player_location(player)
     x2, y2 = game.get_player_location(game.get_opponent(player))
 
     d = distance(x1, y1, x2, y2)*0.1
 
-    if own_moves - opp_moves > 0:
+    if bs > 0:
         d = d*(-1)
 
-    return float(own_moves - opp_moves) + d*0.1
+    return bs + d*0.1
 
 
 def strategy_free_field(game, player):
@@ -133,6 +103,32 @@ def strategy_free_field(game, player):
         sum_of_distances += distance(x, y, i[0], i[1])
 
     return float(sum_of_distances)*(-1.0)
+
+
+def strategy_complex(game, player):
+    """
+    Heuristic idea:
+    Move closer to regions with a lot of blank spaces
+
+    Result:
+
+    """
+    # score = strategy_center(game, player)
+    # score = strategy_close_or_far(game, player)
+    # score = strategy_free_field(game, player)
+    # score = custom_score(game, player)
+
+    # Begginning of the game
+    if len(game.get_blank_spaces()) > game.width*game.height*0.7:
+        score = basic_score(game, player)
+    # Game middle
+    elif len(game.get_blank_spaces()) > game.width*game.height*0.4:
+        score = strategy_center(game, player)
+    # Game ending
+    else:
+        score = basic_score(game, player)
+
+    return score
 
 
 class CustomPlayer:
@@ -165,7 +161,7 @@ class CustomPlayer:
         timer expires.
     """
 
-    def __init__(self, search_depth=3, score_fn=strategy_free_field,
+    def __init__(self, search_depth=3, score_fn=custom_score,
                  iterative=True, method='minimax', timeout=10.):
         self.search_depth = search_depth
         self.iterative = iterative

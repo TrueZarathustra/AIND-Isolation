@@ -22,6 +22,7 @@ def custom_score(game, player):
 
     # return basic_score(game, player)
     return strategy_complex(game, player)
+    # return strategy_closer_to_center(game, player)
 
 
 def basic_score(game, player):
@@ -105,6 +106,25 @@ def strategy_free_field(game, player):
     return float(sum_of_distances)*(-1.0)
 
 
+def strategy_closer_to_center(game, player):
+    """
+    Heuristic idea:
+    Move closer to regions with a lot of blank spaces
+    """
+    bs = basic_score(game, player)
+
+    x1, y1 = game.get_player_location(player)
+    x2, y2 = game.get_player_location(game.get_opponent(player))
+
+    xc = game.width*1.0/2
+    yc = game.height*1.0/2
+
+    d1 = distance(x1, y1, xc, yc)*0.1
+    d2 = distance(x2, y2, xc, yc)*0.1
+
+    return bs + (d2-d1)*0.1
+
+
 def strategy_complex(game, player):
     """
     Heuristic idea:
@@ -120,10 +140,10 @@ def strategy_complex(game, player):
 
     # Begginning of the game
     if len(game.get_blank_spaces()) > game.width*game.height*0.7:
-        score = basic_score(game, player)
+        score = strategy_closer_to_center(game, player)
     # Game middle
     elif len(game.get_blank_spaces()) > game.width*game.height*0.4:
-        score = strategy_center(game, player)
+        score = basic_score(game, player)
     # Game ending
     else:
         score = basic_score(game, player)

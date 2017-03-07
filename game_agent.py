@@ -140,10 +140,10 @@ def strategy_complex(game, player):
 
     # Begginning of the game
     if len(game.get_blank_spaces()) > game.width*game.height*0.7:
-        score = strategy_closer_to_center(game, player)
     # Game middle
-    elif len(game.get_blank_spaces()) > game.width*game.height*0.4:
         score = basic_score(game, player)
+    elif len(game.get_blank_spaces()) > game.width*game.height*0.4:
+        score = strategy_closer_to_center(game, player)
     # Game ending
     else:
         score = basic_score(game, player)

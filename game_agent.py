@@ -19,14 +19,13 @@ class Timeout(Exception):
 
 
 def custom_score(game, player):
+    """Points to a preferrable heuristic"""
 
-    # return basic_score(game, player)
-    return strategy_complex(game, player)
-    # return strategy_closer_to_center(game, player)
+    return strategy_center(game, player)
 
 
 def basic_score(game, player):
-
+    """Basic heuristic from the lecture. Just as a baseline"""
     if game.is_loser(player):
         return float("-inf")
 
@@ -43,10 +42,6 @@ def strategy_center(game, player):
     Heuristic idea:
     Assumption, that in case you have equal number of legal moves,
     it is preferrable to be closer to center
-
-    Result:
-    ID_Improved: 59,08% (average)
-    Student: 66.7% (average)
     """
 
     xc = game.width*1.0/2
@@ -61,10 +56,6 @@ def strategy_close_or_far(game, player):
     """
     Heuristic idea:
     Move closer to opponent, when he has less moves. Otherwise run from him
-
-    Result:
-    ID_Improved: 62.5%
-    Student: 64.29%
     """
 
     bs = basic_score(game, player)
@@ -84,10 +75,6 @@ def strategy_free_field(game, player):
     """
     Heuristic idea:
     Move closer to regions with a lot of blank spaces
-
-    Result:
-    ID_Improved: 64.64%
-    Student: 66,78%
     """
 
     if game.is_loser(player):
@@ -109,7 +96,7 @@ def strategy_free_field(game, player):
 def strategy_closer_to_center(game, player):
     """
     Heuristic idea:
-    Move closer to regions with a lot of blank spaces
+    Be closer to the center, than the opponent
     """
     bs = basic_score(game, player)
 
@@ -127,23 +114,15 @@ def strategy_closer_to_center(game, player):
 
 def strategy_complex(game, player):
     """
-    Heuristic idea:
-    Move closer to regions with a lot of blank spaces
-
-    Result:
-
+    A functon to use different heuristics, depending on the stage of the game
     """
-    # score = strategy_center(game, player)
-    # score = strategy_close_or_far(game, player)
-    # score = strategy_free_field(game, player)
-    # score = custom_score(game, player)
 
     # Begginning of the game
     if len(game.get_blank_spaces()) > game.width*game.height*0.7:
-    # Game middle
         score = basic_score(game, player)
+    # Game middle
     elif len(game.get_blank_spaces()) > game.width*game.height*0.4:
-        score = strategy_closer_to_center(game, player)
+        score = strategy_center(game, player)
     # Game ending
     else:
         score = basic_score(game, player)
@@ -406,20 +385,3 @@ class CustomPlayer:
                 beta = min(alpha, score)
 
         return score, move
-
-
-'''
-
-for m in legal_moves:
-    score_m, move_m = self.minimax(game.forecast_move(m), depth - 1, not maximizing_player)
-    
-    if maximizing_player:
-        if score_m > score:
-            score = score_m
-            move = m
-
-    elif not maximizing_player:
-        if score_m < score:
-            score = score_m
-            move = m
-'''
